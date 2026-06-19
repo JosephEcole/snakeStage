@@ -3,20 +3,25 @@ import { Food } from './food.js';
 import { setupInput } from './input.js';
 
 const canvas = document.getElementById("game");
-console.log("canvas =", canvas);
-
 const ctx = canvas.getContext("2d");
 
 const CELL = 20;
 let cols, rows;
-let snake, food;
+let snake;
+
+// nombre de nourritures voulues
+const FOOD_COUNT = 10;
+let foods = [];
 
 function update() {
     snake.move();
 
-    if (snake.headIsAt(food.position)) {
-        snake.grow();
-        food.respawn(cols, rows);
+    // vérifier chaque nourriture
+    for (let i = 0; i < foods.length; i++) {
+        if (snake.headIsAt(foods[i].position)) {
+            snake.grow();
+            foods[i].respawn(cols, rows);
+        }
     }
 
     if (snake.isDead(cols, rows)) {
@@ -27,14 +32,15 @@ function update() {
 function gameOver() {
     alert("Game Over!");
     snake = new Snake();
-    food.respawn(cols, rows);
+
+    // respawn toutes les nourritures
+    foods.forEach(f => f.respawn(cols, rows));
 }
 
 function drawGrid() {
-    ctx.strokeStyle = "#333"; // couleur de la grille
+    ctx.strokeStyle = "#333";
     ctx.lineWidth = 1;
 
-    // lignes verticales
     for (let x = 0; x <= cols; x++) {
         ctx.beginPath();
         ctx.moveTo(x * CELL, 0);
@@ -42,7 +48,6 @@ function drawGrid() {
         ctx.stroke();
     }
 
-    // lignes horizontales
     for (let y = 0; y <= rows; y++) {
         ctx.beginPath();
         ctx.moveTo(0, y * CELL);
@@ -54,9 +59,11 @@ function drawGrid() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    drawGrid();            // ← ajoute la mini-grille
+    drawGrid();
     snake.draw(ctx, CELL);
-    food.draw(ctx, CELL);
+
+    // dessiner toutes les nourritures
+    foods.forEach(f => f.draw(ctx, CELL));
 }
 
 function gameLoop() {
@@ -78,14 +85,17 @@ function init() {
     resize();
 
     snake = new Snake();
-    food = new Food();
 
-    food.spawn(cols, rows);
+    // créer N nourritures
+    foods = [];
+    for (let i = 0; i < FOOD_COUNT; i++) {
+        const f = new Food();
+        f.spawn(cols, rows);
+        foods.push(f);
+    }
+
     setupInput(snake);
     gameLoop();
 }
 
-// attends que le DOM soit complètement chargé avant d'initialiser le jeu
-document.addEventListener("DOMContentLoaded", () => {
-    init();
-});
+document.addEventListener("DOMContentLoaded", init);
