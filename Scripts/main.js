@@ -32,6 +32,7 @@ function update() {
 function gameOver() {
     alert("Game Over!");
     snake = new Snake();
+    setupInput(snake);
 
     // respawn toutes les nourritures
     foods.forEach(f => f.respawn(cols, rows));
